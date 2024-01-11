@@ -1,0 +1,22 @@
+PODS:
+  - bonsoir (1.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+
+DEPENDENCIES:
+  - bonsoir (from `.symlinks/plugins/bonsoir/ios`)
+  - Flutter (from `Flutter`)
+
+EXTERNAL SOURCES:
+  bonsoir:
+    :path: ".symlinks/plugins/bonsoir/ios"
+  Flutter:
+    :path: Flutter
+
+SPEC CHECKSUMS:
+  bonsoir: c97724f65041a4068af8ab5f3449ae7f58b725b1
+  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+
+PODFILE CHECKSUM: e6f26e276714fe582b80c95cc98f8864fc4b73e5
+
+COCOAPODS: 1.12.1
