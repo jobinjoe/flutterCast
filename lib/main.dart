@@ -1,11 +1,17 @@
-import 'package:cast/cast.dart';
+import 'package:cast/device.dart';
+import 'package:cast/discovery_service.dart';
+import 'package:cast/session.dart';
+import 'package:cast/session_manager.dart';
 import 'package:flutter/material.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -14,20 +20,83 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: Scaffold(
-        appBar: AppBar(),
-        body: MyHomePage(),
+      home: const Scaffold(
+        body: WebView(),
       ),
+      routes: {
+        Cast.route: (context) => const Cast(),
+      },
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class WebView extends StatefulWidget {
+  const WebView({super.key});
+
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  State<WebView> createState() => _WebViewState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _WebViewState extends State<WebView> {
+  final webViewController = WebViewController()
+    ..setJavaScriptMode(JavaScriptMode.unrestricted)
+    ..setBackgroundColor(const Color(0x00000000))
+    ..setNavigationDelegate(
+      NavigationDelegate(
+        onProgress: (int progress) {
+          // Update loading bar.
+        },
+        onPageStarted: (String url) {},
+        onPageFinished: (String url) {},
+        onWebResourceError: (WebResourceError error) {},
+        onNavigationRequest: (NavigationRequest request) {
+          if (request.url.startsWith('https://www.youtube.com/')) {
+            return NavigationDecision.prevent;
+          }
+          return NavigationDecision.navigate;
+        },
+      ),
+    )
+    ..loadRequest(Uri.parse('http://192.168.1.106:4200/physioAssist'));
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: WebViewWidget(controller: webViewController),
+        ),
+        Positioned(
+          bottom: 16,
+          right: 16,
+          height: 40,
+          width: 40,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              child: IconButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, Cast.route);
+                },
+                icon: const Icon(Icons.cast, color: Colors.white),
+              ),
+            ),
+          ),
+        )
+      ],
+    );
+  }
+}
+
+class Cast extends StatefulWidget {
+  static String route = '/cast';
+  const Cast({super.key});
+
+  @override
+  State<Cast> createState() => _CastState();
+}
+
+class _CastState extends State<Cast> {
   Future<List<CastDevice>>? _future;
 
   @override
@@ -38,82 +107,124 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<CastDevice>>(
-      future: _future,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return Center(
-            child: Text(
-              'Error: ${snapshot.error.toString()}',
-            ),
-          );
-        } else if (!snapshot.hasData) {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
-        if (snapshot.data!.isEmpty) {
-          return Column(
-            children: [
-              Center(
-                child: Text(
-                  'No Chromecast founded',
-                ),
+    return Scaffold(
+      appBar: AppBar(),
+      body: FutureBuilder<List<CastDevice>>(
+        future: _future,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                'Error: ${snapshot.error.toString()}',
               ),
-            ],
-          );
-        }
-
-        return Column(
-          children: snapshot.data!.map((device) {
-            return ListTile(
-              title: Text(device.name),
-              onTap: () {
-                // _connectToYourApp(context, device);
-                _connectAndPlayMedia(context, device);
-              },
             );
-          }).toList(),
-        );
-      },
+          } else if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          if (snapshot.data!.isEmpty) {
+            return const Column(
+              children: [
+                Center(
+                  child: Text(
+                    'No Chromecast founded',
+                  ),
+                ),
+              ],
+            );
+          }
+
+          return Column(
+            children: snapshot.data!.map((device) {
+              return ListTile(
+                title: Text(device.name),
+                onTap: () {
+                  // _connectToYourApp(context, device);
+                  _connectAndPlayMedia(context, device);
+                },
+              );
+            }).toList(),
+          );
+        },
+      ),
     );
+    // return FutureBuilder<List<CastDevice>>(
+    //   future: _future,
+    //   builder: (context, snapshot) {
+    //     if (snapshot.hasError) {
+    //       return Center(
+    //         child: Text(
+    //           'Error: ${snapshot.error.toString()}',
+    //         ),
+    //       );
+    //     } else if (!snapshot.hasData) {
+    //       return const Center(
+    //         child: CircularProgressIndicator(),
+    //       );
+    //     }
+    //
+    //     if (snapshot.data!.isEmpty) {
+    //       return const Column(
+    //         children: [
+    //           Center(
+    //             child: Text(
+    //               'No Chromecast founded',
+    //             ),
+    //           ),
+    //         ],
+    //       );
+    //     }
+    //
+    //     return Column(
+    //       children: snapshot.data!.map((device) {
+    //         return ListTile(
+    //           title: Text(device.name),
+    //           onTap: () {
+    //             // _connectToYourApp(context, device);
+    //             _connectAndPlayMedia(context, device);
+    //           },
+    //         );
+    //       }).toList(),
+    //     );
+    //   },
+    // );
   }
 
   void _startSearch() {
     _future = CastDiscoveryService().search();
   }
 
-  Future<void> _connectToYourApp(
-      BuildContext context, CastDevice object) async {
-    final session = await CastSessionManager().startSession(object);
+  // Future<void> _connectToYourApp(
+  //     BuildContext context, CastDevice object) async {
+  //   final session = await CastSessionManager().startSession(object);
+  //
+  //   session.stateStream.listen((state) {
+  //     if (state == CastSessionState.connected) {
+  //       const snackBar = SnackBar(content: Text('Connected'));
+  //       ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  //
+  //       _sendMessageToYourApp(session);
+  //     }
+  //   });
+  //
+  //   session.messageStream.listen((message) {
+  //     print('receive message: $message');
+  //   });
+  //
+  //   session.sendMessage(CastSession.kNamespaceReceiver, {
+  //     'type': 'LAUNCH',
+  //     'appId': 'Youtube', // set the appId of your app here
+  //   });
+  // }
 
-    session.stateStream.listen((state) {
-      if (state == CastSessionState.connected) {
-        final snackBar = SnackBar(content: Text('Connected'));
-        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
-        _sendMessageToYourApp(session);
-      }
-    });
-
-    session.messageStream.listen((message) {
-      print('receive message: $message');
-    });
-
-    session.sendMessage(CastSession.kNamespaceReceiver, {
-      'type': 'LAUNCH',
-      'appId': 'Youtube', // set the appId of your app here
-    });
-  }
-
-  void _sendMessageToYourApp(CastSession session) {
-    print('_sendMessageToYourApp');
-
-    session.sendMessage('urn:x-cast:namespace-of-the-app', {
-      'type': 'sample',
-    });
-  }
+  // void _sendMessageToYourApp(CastSession session) {
+  //
+  //   session.sendMessage('urn:x-cast:namespace-of-the-app', {
+  //     'type': 'sample',
+  //   });
+  // }
 
   Future<void> _connectAndPlayMedia(
       BuildContext context, CastDevice object) async {
@@ -121,7 +232,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     session.stateStream.listen((state) {
       if (state == CastSessionState.connected) {
-        final snackBar = SnackBar(content: Text('Connected'));
+        const snackBar = SnackBar(content: Text('Connected'));
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
     });
@@ -131,10 +242,10 @@ class _MyHomePageState extends State<MyHomePage> {
     session.messageStream.listen((message) {
       index += 1;
 
-      print('receive message: $message');
+      debugPrint('receive message: $message');
 
       if (index == 2) {
-        Future.delayed(Duration(seconds: 5)).then((x) {
+        Future.delayed(const Duration(seconds: 5)).then((x) {
           _sendMessagePlayVideo(session);
         });
       }
@@ -147,7 +258,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _sendMessagePlayVideo(CastSession session) {
-    print('_sendMessagePlayVideo');
+    debugPrint('_sendMessagePlayVideo');
 
     var message = {
       // Here you can plug an URL to any mp4, webm, mp3 or jpg file with the proper contentType.
