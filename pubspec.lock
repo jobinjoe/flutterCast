@@ -9,6 +9,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
+  bonsoir:
+    dependency: transitive
+    description:
+      name: bonsoir
+      sha256: "7c7beb1f47729526235b55ea82ceac7f7897eee419c39b28a0780c0d276875fa"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1+2"
+  bonsoir_platform_interface:
+    dependency: transitive
+    description:
+      name: bonsoir_platform_interface
+      sha256: "12b4d64ddedeb9dd48d5569a73d30518345babffbcf4c13b6b31043449da5e83"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0+1"
   boolean_selector:
     dependency: transitive
     description:
@@ -17,6 +33,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
+  cast:
+    dependency: "direct main"
+    description:
+      name: cast
+      sha256: "8f1cfb6649227a07e7dbadc24cad759b59de68e287794eac046211852bf32aeb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   characters:
     dependency: transitive
     description:
@@ -57,6 +81,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.1"
+  fixnum:
+    dependency: transitive
+    description:
+      name: fixnum
+      sha256: "25517a4deb0c03aa0f32fd12db525856438902d9c16536311e76cdc57b31d7d1"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -115,6 +147,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.8.3"
+  plugin_platform_interface:
+    dependency: transitive
+    description:
+      name: plugin_platform_interface
+      sha256: "4820fbfdb9478b1ebae27888254d445073732dae3d6ea81f0b7e06d5dedc3f02"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.8"
+  protobuf:
+    dependency: transitive
+    description:
+      name: protobuf
+      sha256: "01dd9bd0fa02548bf2ceee13545d4a0ec6046459d847b6b061d8a27237108a08"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.0"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -186,3 +234,4 @@ packages:
     version: "0.3.0"
 sdks:
   dart: ">=3.2.0 <4.0.0"
+  flutter: ">=1.12.0"
